@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Playerok</title>
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<style>
+:root{--bg:#080d19;--panel:#111b2e;--blue:#3285ff;--text:#f4f7ff;--muted:#9aaac2;--border:#293b57}
+*{box-sizing:border-box}
+body{margin:0;background:radial-gradient(ellipse at top,#18355c,#080d19 60%);color:var(--text);font:15px Arial,sans-serif;padding-bottom:90px}
+.wrap{max-width:760px;margin:auto;padding:16px}
+header{display:flex;justify-content:space-between;align-items:center;margin-bottom:20px}
+.logo{display:flex;align-items:center;gap:10px;font-size:23px;font-weight:bold}
+.logo b{background:linear-gradient(135deg,#55d8ff,#2468ff);padding:10px 14px;border-radius:13px}
+.badge{background:#142b49;color:#a8d4ff;padding:8px 10px;border-radius:20px;font-size:11px}
+.searchrow{display:grid;grid-template-columns:55px 1fr 55px;gap:8px;align-items:center;margin:18px 0}
+.gift{width:55px;height:65px;object-fit:contain;filter:drop-shadow(0 5px 7px #000);animation:float 3s infinite ease-in-out}
+@keyframes float{50%{transform:translateY(-5px) rotate(4deg)}}
+.search{display:flex;align-items:center;background:#111d31;border:1px solid #34557c;border-radius:15px;padding:0 12px;height:52px}
+.search span{font-size:22px;color:#7bbaff;margin-right:8px}
+.search input{width:100%;background:none;border:0;outline:none;color:white;min-width:0}
+.hint{text-align:center;font-size:11px;color:#8193af;margin-bottom:18px}
+.card{background:linear-gradient(145deg,#142139,#0e1728);border:1px solid var(--border);border-radius:18px;padding:16px;margin:12px 0;box-shadow:0 8px 22px #0003}
+.hero{background:linear-gradient(120deg,#1b457d,#122441);border-color:#315d91}
+h1{font-size:24px;margin:7px 0 10px}h2{font-size:19px;margin:5px 0 14px}h3{font-size:15px}
+.muted{color:var(--muted)}.small{font-size:12px}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.stat{background:#0b1424;border:1px solid #263a58;border-radius:14px;padding:13px}
+.stat b{display:block;font-size:20px;margin-top:7px}
+.btn{background:linear-gradient(145deg,#459aff,#2363da);color:white;border:0;border-radius:12px;padding:13px;font-weight:bold;cursor:pointer;box-shadow:0 4px 0 #174895}
+.btn:active{transform:translateY(2px)}
+.btn.secondary{background:#1a2942;box-shadow:0 4px 0 #09111e;border:1px solid #334966}
+.btn.green{background:linear-gradient(145deg,#2adca2,#0c9872);box-shadow:0 4px 0 #08674d}
+.btn.red{background:linear-gradient(145deg,#ff7180,#d83d55);box-shadow:0 4px 0 #8d2639}
+.block{width:100%}.actions{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:13px}
+.field{margin:13px 0}.field label{display:block;color:#b5c4d9;font-size:12px;margin-bottom:7px}
+.field input,.field select,.field textarea{width:100%;padding:13px;background:#0a1425;border:1px solid #304563;border-radius:11px;color:white;outline:none}
+.field textarea{min-height:80px;resize:vertical}
+.section{display:none}.section.active{display:block}
+.notice{background:#101e32;border:1px solid #2a405e;border-radius:12px;padding:12px;color:#aebed4;font-size:12px;line-height:1.5;margin:12px 0}
+.deal{background:#0b1628;border:1px solid #2a3e5b;border-radius:14px;padding:14px;margin:10px 0}
+.pill{font-size:11px;background:#1b385b;color:#acd5ff;border-radius:20px;padding:5px 8px}
+.pill.green{background:#124b3e;color:#80f0c7}
+.row{display:flex;align-items:center;gap:10px}.between{justify-content:space-between}
+.empty{text-align:center;padding:22px 8px;color:#8293ad}
+.nav{position:fixed;bottom:0;left:0;right:0;display:flex;justify-content:center;gap:2px;padding:8px 4px calc(8px + env(safe-area-inset-bottom));background:#091221f5;backdrop-filter:blur(15px);border-top:1px solid #263650;z-index:10}
+.nav button{flex:1;max-width:115px;background:none;color:#8fa0ba;border:0;border-radius:12px;padding:7px 2px;font-size:10px}
+.nav button span{display:block;font-size:20px;margin-bottom:4px}
+.nav button.active{background:#152b49;color:#8cc5ff}
+.nav button.create{background:linear-gradient(145deg,#459aff,#2363da);color:white;max-width:75px;font-weight:bold}
+.avatar{width:55px;height:55px;border-radius:50%;background:linear-gradient(135deg,#58d9ff,#2865e5);display:grid;place-items:center;font-size:24px;font-weight:bold}
+pre{white-space:pre-wrap;overflow-wrap:anywhere;font-size:12px;color:#c7d9f2}
+@media(max-width:400px){.searchrow{grid-template-columns:42px 1fr 42px;gap:5px}.gift{width:42px;height:52px}.card{padding:13px}}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header><div class="logo"><b>P</b> PLAYEROK</div><div class="badge">DEALS • MARKET</div></header>
+
+<div class="searchrow">
+<img class="gift" src="https://nft.fragment.com/gift/snoopdog-1.webp" alt="Snoop Dog" onerror="this.style.visibility='hidden'">
+<div class="search"><span>⌕</span><input id="search" placeholder="Поиск сделок, NFT, ID"></div>
+<img class="gift" src="https://nft.fragment.com/gift/snoopcigar-1.webp" alt="Snoop Cigar" onerror="this.style.visibility='hidden'">
+</div>
+<div class="hint">Поиск по загруженным сделкам · команда администратора: /admin12</div>
+
+<section id="home" class="section active">
+<div class="card hero">
+<div class="small">Добро пожаловать в Playerok</div>
+<h1>Сделки с NFT-подарками</h1>
+<div class="muted">Создавайте сделки и приглашайте второго участника.</div>
+<div class="actions"><button class="btn" onclick="show('create')">＋ Создать сделку</button><button class="btn secondary" onclick="show('join')">Войти по ID</button></div>
+</div>
+<div class="grid">
+<div class="stat"><span class="muted small">Мой баланс</span><b id="homeBalance">0 ₽</b></div>
+<div class="stat"><span class="muted small">Мои сделки</span><b id="homeDeals">0</b></div>
+</div>
+<div class="card"><h2>Telegram NFT</h2>
+<div class="grid">
+<div class="row"><img width="48" src="https://nft.fragment.com/gift/pepe-1.webp" alt="" onerror="this.style.display='none'"><div><b>Pepe</b><div class="small muted">Подарок</div></div></div>
+<div class="row"><img width="48" src="https://nft.fragment.com/gift/durovscap-1.webp" alt="" onerror="this.style.display='none'"><div><b>Кепка Дурова</b><div class="small muted">Подарок</div></div></div>
+</div>
+<div class="notice">Картинки показаны как примеры. В сделке укажите точную ссылку, название и цену NFT.</div>
+</div>
+<div class="card"><h2>Порядок сделки</h2><p class="muted small">1. Покупатель оплачивает сделку. 2. Продавец передаёт NFT менеджеру @playerok012. 3. Менеджер подтверждает получение и завершение. Только подтверждённые завершённые сделки должны попадать в Live.</p></div>
+<div class="card"><div class="row between"><div><b>Нужна помощь?</b><div class="muted small">Свяжитесь с поддержкой</div></div><button class="btn secondary" onclick="show('support')">Чат</button></div></div>
+</section>
+
+<section id="searchPage" class="section"><h2>Результаты поиска</h2><div id="searchResults" class="card"><div class="empty">Введите запрос.</div></div></section>
+
+<section id="create" class="section">
+<h2>Создать сделку</h2><div class="card">
+<div class="field"><label>Ссылка на NFT</label><input id="nftLink" placeholder="https://t.me/nft/..."></div>
+<div class="field"><label>Название NFT-подарка</label><input id="item" placeholder="Snoop Cigar, Pepe..."></div>
+<div class="grid"><div class="field"><label>Цена</label><input id="price" type="number" min="0" step="any" placeholder="100"></div><div class="field"><label>Валюта</label><select id="currency"><option>RUB</option><option>TON</option><option>USD</option><option>Stars</option></select></div></div>
+<div class="field"><label>Telegram продавца</label><input id="seller" placeholder="@username"></div>
+<div class="field"><label>Описание и условия</label><textarea id="description" placeholder="Дополнительные условия"></textarea></div>
+<div class="field"><label>Ваша роль</label><select id="role"><option value="seller">Продавец</option><option value="buyer">Покупатель</option></select></div>
+<button class="btn block" onclick="createDeal()">Создать сделку</button><div id="createMsg" class="notice" hidden></div>
+</div></section>
+
+<section id="join" class="section"><h2>Присоединиться к сделке</h2><div class="card">
+<div class="field"><label>ID сделки</label><input id="joinId" placeholder="ID сделки"></div>
+<div class="field"><label>Ваша роль</label><select id="joinRole"><option value="buyer">Покупатель</option><option value="seller">Продавец</option></select></div>
+<button class="btn block" onclick="joinDeal()">Присоединиться</button><div id="joinMsg" class="notice" hidden></div>
+</div></section>
+
+<section id="deals" class="section"><h2>Мои сделки</h2><div class="card" id="dealList"><div class="empty">Загрузка сделок…</div></div></section>
+<section id="live" class="section"><h2>Live — завершённые сделки</h2><div class="card" id="liveList"><div class="empty">Загрузка…</div></div></section>
+
+<section id="balance" class="section"><h2>Баланс</h2><div class="card">
+<div class="stat"><span class="muted small">Доступный баланс</span><b id="balanceValue">0 ₽</b></div>
+<div class="notice">Реальные пополнения и выводы требуют серверной обработки, проверки заявок и платёжного провайдера. Демобаланс не начисляется.</div>
+<div class="actions"><button class="btn" onclick="money('Пополнение')">Пополнить</button><button class="btn secondary" onclick="money('Вывод')">Вывести</button></div>
+<div id="moneyMsg" class="notice" hidden></div>
+</div></section>
+
+<section id="profile" class="section"><h2>Профиль</h2><div class="card">
+<div class="row"><div class="avatar" id="avatar">P</div><div><b id="profileName">Пользователь Telegram</b><div class="muted small" id="profileUsername">Откройте через Telegram</div></div></div>
+<div class="grid" style="margin-top:15px">
+<div class="stat"><span class="muted small">Баланс</span><b id="profileBalance">0 ₽</b></div>
+<div class="stat"><span class="muted small">Оборот</span><b id="turnover">—</b></div>
+<div class="stat"><span class="muted small">Успешные сделки</span><b id="successCount">0</b></div>
+<div class="stat"><span class="muted small">Рейтинг</span><b id="rating">—</b></div>
+</div>
+<h3>Отзывы</h3><div id="reviews" class="muted small">Пока нет подтверждённых отзывов.</div>
+<div class="actions"><button class="btn secondary" onclick="show('deals')">Мои сделки</button><button class="btn secondary" onclick="show('balance')">Баланс</button><button class="btn secondary" onclick="show('support')">Поддержка</button><button class="btn secondary" onclick="show('settings')">Настройки</button></div>
+</div></section>
+
+<section id="support" class="section"><h2>Чат поддержки</h2><div class="card">
+<div class="field"><label>Сообщение</label><textarea id="supportText" placeholder="Напишите сообщение…"></textarea></div>
+<button class="btn block" onclick="sendSupport()">Отправить</button><div id="supportMsg" class="notice" hidden></div>
+</div></section>
+
+<section id="settings" class="section"><h2>Настройки</h2><div class="card"><p class="muted small">Профиль и доступ должны проверяться сервером при запуске в Telegram.</p><button class="btn block" onclick="loadAll()">Обновить данные</button></div></section>
+
+<section id="detail" class="section"><h2>Детали сделки</h2><div id="detailBody" class="card"></div></section>
+
+<section id="admin" class="section"><h2>Админ-панель</h2>
+<div class="notice">Доступ разрешается только сервером после проверки Telegram ID администратора. Команда в поиске сама по себе не защищает панель.</div>
+<div class="grid"><div class="stat"><span class="muted small">Пользователи</span><b>Сервер</b></div><div class="stat"><span class="muted small">Сделки</span><b id="adminDealCount">—</b></div></div>
+<div class="actions"><button class="btn secondary" onclick="adminLoad('deals')">Все сделки</button><button class="btn secondary" onclick="adminLoad('users')">Пользователи</button><button class="btn secondary" onclick="adminLoad('deposits')">Пополнения</button><button class="btn secondary" onclick="adminLoad('withdrawals')">Выводы</button><button class="btn secondary" onclick="adminLoad('support')">Поддержка</button><button class="btn secondary" onclick="adminLoad('stats')">Статистика</button></div>
+<div id="adminContent" class="card"><div class="empty">Панель загружает данные с сервера.</div></div>
+</section>
+</div>
+
+<nav class="nav">
+<button class="active" data-page="home" onclick="show('home',this)"><span>⌂</span>Главная</button>
+<button data-page="deals" onclick="show('deals',this)"><span>▤</span>Сделки</button>
+<button class="create" data-page="create" onclick="show('create',this)"><span>＋</span>Создать</button>
+<button data-page="live" onclick="show('live',this)"><span>◉</span>Live</button>
+<button data-page="profile" onclick="show('profile',this)"><span>♙</span>Профиль</button>
+</nav>
+
+<script>
+/*
+  ВАЖНО: замени адрес ниже на реальный URL сервиса Render.
+  Это только интерфейс. Сервер обязан проверять Telegram initData
+  и разрешать /api/admin/* только заданным ADMIN_IDS.
+*/
+const API_BASE="https://YOUR-RENDER-ADDRESS.onrender.com";
+const tg=window.Telegram?.WebApp;
+if(tg){tg.ready();tg.expand();}
+let deals=[];
+const $=id=>document.getElementById(id);
+function headers(){return {"Content-Type":"application/json","X-Telegram-Init-Data":tg?.initData||""};}
+async function api(path,options={}){
+ if(API_BASE.includes("YOUR-RENDER-ADDRESS"))throw Error("Сначала укажите URL вашего сервера Render в API_BASE.");
+ const res=await fetch(API_BASE+path,{...options,headers:{...headers(),...(options.headers||{})}});
+ const data=await res.json().catch(()=>({}));
+ if(!res.ok)throw Error(data.detail||data.error||"Ошибка сервера: "+res.status);
+ return data;
+}
+function show(id,btn){
+ document.querySelectorAll(".section").forEach(x=>x.classList.remove("active"));
+ $(id)?.classList.add("active");
+ document.querySelectorAll(".nav button").forEach(x=>x.classList.remove("active"));
+ if(btn)btn.classList.add("active");else document.querySelector('[data-page="'+id+'"]')?.classList.add("active");
+ if(id==="deals"||id==="live")loadDeals();
+ if(id==="profile")loadProfile();
+}
+function say(id,text){$(id).textContent=text;$(id).hidden=false;}
+function esc(x){return String(x??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));}
+async function createDeal(){
+ const item=$("item").value.trim(),price=Number($("price").value);
+ if(!item||!Number.isFinite(price)||price<=0){say("createMsg","Укажите название и цену больше нуля.");return;}
+ try{
+  const d=await api("/api/deals",{method:"POST",body:JSON.stringify({item,price,currency:$("currency").value,role:$("role").value,nft_link:$("nftLink").value.trim(),seller_username:$("seller").value.trim(),description:$("description").value.trim()})});
+  const id=d.id??d.deal_id??d.deal?.id;
+  say("createMsg","Сделка создана сервером. ID: "+(id??"ответ получен"));
+  if(id)$("joinId").value=id;
+  await loadDeals();
+ }catch(e){say("createMsg",e.message);}
+}
+async function joinDeal(){
+ const id=$("joinId").value.trim();if(!id){say("joinMsg","Введите ID сделки.");return;}
+ try{await api("/api/deals/join",{method:"POST",body:JSON.stringify({deal_id:id,role:$("joinRole").value})});say("joinMsg","Запрос принят сервером.");await loadDeals();}
+ catch(e){say("joinMsg",e.message);}
+}
+function card(d){
+ const id=d.id??d.deal_id??"—",status=d.status||"ожидает участника";
+ return '<div class="deal"><div class="row between"><b>'+esc(d.item||d.title||"Сделка")+'</b><span class="pill '+(status==="completed"?"green":"")+'">'+esc(status)+'</span></div><p class="small muted">ID: '+esc(id)+' · '+esc(d.price??"—")+' '+esc(d.currency||"")+'</p><button class="btn secondary" onclick="openDeal('+JSON.stringify(String(id))+')">Открыть</button></div>';
+}
+async function loadDeals(){
+ try{
+  const r=await api("/api/deals");deals=Array.isArray(r)?r:(r.deals||[]);
+  $("dealList").innerHTML=deals.length?deals.map(card).join(""):'<div class="empty">Сделок пока нет.</div>';
+  const done=deals.filter(d=>d.status==="completed");
+  $("liveList").innerHTML=done.length?done.map(card).join(""):'<div class="empty">Завершённых сделок пока нет.</div>';
+  $("homeDeals").textContent=deals.length;
+ }catch(e){$("dealList").innerHTML='<div class="empty">'+esc(e.message)+'</div>';$("liveList").innerHTML='<div class="empty">'+esc(e.message)+'</div>';}
+}
+async function openDeal(id){
+ try{
+  const r=await api("/api/deals/"+encodeURIComponent(id));const d=r.deal||r;
+  $("detailBody").innerHTML='<h3>'+esc(d.item||"Сделка")+'</h3><p class="muted small">ID: '+esc(d.id||id)+'</p><p>'+esc(d.description||"")+'</p><p><b>'+esc(d.price||"—")+' '+esc(d.currency||"")+'</b></p><p class="small">Статус: '+esc(d.status||"—")+'</p><div class="notice">Покупатель оплачивает первым. После этого продавец передаёт NFT менеджеру @playerok012. Менеджер подтверждает получение и завершение.</div><button class="btn block" onclick="shareDeal('+JSON.stringify(String(id))+')">Поделиться сделкой</button><div id="detailMsg" class="notice" hidden></div>';
+  show("detail");
+ }catch(e){alert(e.message);}
+}
+async function shareDeal(id){
+ try{const r=await api("/api/deals/"+encodeURIComponent(id)+"/invite",{method:"POST",body:JSON.stringify({})});const text=r.share_text||r.url||("Сделка "+id);if(tg?.openTelegramLink)tg.openTelegramLink("https://t.me/share/url?url="+encodeURIComponent(text));else if(navigator.share)await navigator.share({text});else{await navigator.clipboard.writeText(text);alert("Ссылка скопирована");}}
+ catch(e){if($("detailMsg"))say("detailMsg",e.message);else alert(e.message);}
+}
+async function loadProfile(){
+ try{
+  const r=await api("/api/me"),u=r.user||r;
+  $("profileName").textContent=u.first_name||u.name||"Пользователь Telegram";
+  $("profileUsername").textContent=u.username?"@"+u.username:"Telegram";
+  $("avatar").textContent=(u.first_name||"P").slice(0,1).toUpperCase();
+  const bal=Number(u.balance||0).toLocaleString("ru-RU")+" ₽";
+  $("homeBalance").textContent=bal;$("balanceValue").textContent=bal;$("profileBalance").textContent=bal;
+  try{const s=await api("/api/profile/stats");$("turnover").textContent=s.turnover??"—";$("successCount").textContent=s.successful_deals??0;$("rating").textContent=s.rating??"—";$("reviews").textContent=(s.reviews||[]).map(x=>x.text).join(" · ")||"Пока нет подтверждённых отзывов."}
+  catch{$("reviews").textContent="Статистика и отзывы появятся после подключения серверного модуля."}
+ }catch(e){$("profileUsername").textContent=e.message;}
+}
+function money(kind){say("moneyMsg",kind+": требуется серверная обработка и платёжный провайдер. Реальные деньги здесь не списываются и не начисляются.");}
+async function sendSupport(){
+ const message=$("supportText").value.trim();if(!message){say("supportMsg","Введите сообщение.");return;}
+ try{await api("/api/support",{method:"POST",body:JSON.stringify({message})});say("supportMsg","Сообщение отправлено.");$("supportText").value="";}
+ catch(e){say("supportMsg",e.message);}
+}
+async function adminLoad(type){
+ try{
+  const r=await api("/api/admin/"+type);
+  $("adminContent").innerHTML="<pre>"+esc(JSON.stringify(r,null,2))+"</pre>";
+ }catch(e){$("adminContent").innerHTML='<div class="notice">'+esc(e.message)+'<br>Эта функция требует серверного маршрута и проверки Telegram ID администратора.</div>';}
+}
+$("search").addEventListener("keydown",e=>{if(e.key==="Enter")searchNow();});
+$("search").addEventListener("input",()=>{if($("search").value.trim())searchNow();});
+function searchNow(){
+ const q=$("search").value.trim();
+ if(q==="/admin12"){show("admin");adminLoad("deals");return;}
+ if(!q){show("home");return;}
+ show("searchPage");
+ const found=deals.filter(d=>[d.item,d.title,d.id,d.deal_id,d.seller_username].some(v=>String(v||"").toLowerCase().includes(q.toLowerCase())));
+ $("searchResults").innerHTML=found.length?found.map(card).join(""):'<div class="empty">Совпадений в загруженных сделках нет. Для поиска по всем пользователям и сделкам нужен серверный маршрут поиска.</div>';
+}
+async function loadAll(){await loadProfile();await loadDeals();}
+loadAll();
+</script>
+</body>
+</html>
+```
